@@ -67,12 +67,19 @@ final class Route implements ArrayAccess, ArrayableInterface
         $this->paramNames = [];
         $this->paramRules = [];
 
+        // 兼容两种占位符写法：(name:rule) 与 {name:rule} / {name}
+        $normalized = preg_replace_callback(
+            '#\{([a-zA-Z_][a-zA-Z0-9_]*)(?::([^}]*))?\}#',
+            static fn($m) => '(' . $m[1] . (isset($m[2]) && $m[2] !== '' ? ':' . $m[2] : '') . ')',
+            $this->path
+        );
+
         $pattern = '#(?<!\\\\)\(([a-zA-Z_][a-zA-Z0-9_]*)(?::((?:\\\\.|.)*?))?\)#';
         $final   = preg_replace_callback($pattern, function ($m) {
             $this->paramNames[]      = $m[1];
             $this->paramRules[$m[1]] = str_replace(['\\(', '\\)'], ['(', ')'], $m[2] ?? '.+');;
             return '([^/]+)';
-        }, $this->path);
+        }, $normalized);
 
         $this->pattern = "#^{$final}$#";
     }

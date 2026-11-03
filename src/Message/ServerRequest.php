@@ -32,8 +32,8 @@ final class ServerRequest extends AbstractRequest implements ServerRequestInterf
     protected string $rawBody;
     protected array $attributes = [];
     // getParsedBody() 的惰性解析结果与解析标记（withParsedBody() 可直接预置）
-    protected bool $parsed       = false;
-    protected mixed $parsedBody  = null;
+    protected bool $parsed      = false;
+    protected mixed $parsedBody = null;
 
     public function __construct(
         string $method,
@@ -92,7 +92,7 @@ final class ServerRequest extends AbstractRequest implements ServerRequestInterf
         $server = array_merge($server, [
             'REQUEST_METHOD' => $method,
         ]);
-        $request = new self($method, $uri, $server, $get, $post, $cookie, $files, '');
+        return  new self($method, $uri, $server, $get, $post, $cookie, $files, '');
     }
 
     public function getQuery(string $key, mixed $default = null): mixed

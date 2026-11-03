@@ -366,12 +366,19 @@ final class Router
         $segments = array_filter(explode('/', $route['path']), fn($s) => $s !== '');
 
         foreach ($segments as $seg) {
-            if (preg_match(self::PARAM_PATTERN, $seg, $m)) {
+            // 兼容 {name} / {name:rule} 与 (name) / (name:rule) 两种占位符
+            $normSeg = preg_replace_callback(
+                '#\{([a-zA-Z_][a-zA-Z0-9_]*)(?::([^}]*))?\}#',
+                static fn($m) => '(' . $m[1] . (isset($m[2]) && $m[2] !== '' ? ':' . $m[2] : '') . ')',
+                $seg
+            );
+
+            if (preg_match(self::PARAM_PATTERN, $normSeg, $m)) {
                 $curr->param ??= new TrieNode();
                 $curr = $curr->param;
             } else {
-                $curr->static[$seg] ??= new TrieNode();
-                $curr = $curr->static[$seg];
+                $curr->static[$normSeg] ??= new TrieNode();
+                $curr = $curr->static[$normSeg];
             }
         }
 
